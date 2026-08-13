@@ -68,9 +68,10 @@ class ExerciseCategoryControllerTest {
                             """)
                 )
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.name").value("Chest"))
-                .andExpect(jsonPath("$.active").value(true));
+                .andExpect(jsonPath("$.status").value(201))
+                .andExpect(jsonPath("$.data.id").value(1))
+                .andExpect(jsonPath("$.data.name").value("Chest"))
+                .andExpect(jsonPath("$.data.active").value(true));
     }
 
     @Test
@@ -99,9 +100,10 @@ class ExerciseCategoryControllerTest {
                         get("/api/exercise-categories")
                 )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(1))
-                .andExpect(jsonPath("$[0].name").value("Chest"))
-                .andExpect(jsonPath("$[0].active").value(true));
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.data[0].id").value(1))
+                .andExpect(jsonPath("$.data[0].name").value("Chest"))
+                .andExpect(jsonPath("$.data[0].active").value(true));
     }
 
     @Test
@@ -130,9 +132,10 @@ class ExerciseCategoryControllerTest {
                         get("/api/exercise-categories/1")
                 )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.name").value("Chest"))
-                .andExpect(jsonPath("$.active").value(true));
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.data.id").value(1))
+                .andExpect(jsonPath("$.data.name").value("Chest"))
+                .andExpect(jsonPath("$.data.active").value(true));
     }
 
     @Test
@@ -187,9 +190,10 @@ class ExerciseCategoryControllerTest {
                             """)
                 )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.name").value("Upper Chest"))
-                .andExpect(jsonPath("$.active").value(true));
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.data.id").value(1))
+                .andExpect(jsonPath("$.data.name").value("Upper Chest"))
+                .andExpect(jsonPath("$.data.active").value(true));
     }
 
     @Test
@@ -202,7 +206,10 @@ class ExerciseCategoryControllerTest {
         mockMvc.perform(
                         patch("/api/exercise-categories/1/activate")
                 )
-                .andExpect(status().isNoContent());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.message")
+                        .value("Exercise category activated successfully"));
 
         verify(exerciseCategoryService).activate(1L);
     }
@@ -217,7 +224,10 @@ class ExerciseCategoryControllerTest {
         mockMvc.perform(
                         patch("/api/exercise-categories/1/deactivate")
                 )
-                .andExpect(status().isNoContent());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.message")
+                        .value("Exercise category deactivated successfully"));
 
         verify(exerciseCategoryService).deactivate(1L);
     }
