@@ -3,43 +3,30 @@ package com.imanol.gym.catalog.exercise.service;
 import com.imanol.gym.catalog.exercise.entity.ExerciseCategory;
 import com.imanol.gym.catalog.exercise.repository.ExerciseCategoryRepository;
 import com.imanol.gym.common.exception.ResourceNotFoundException;
+import com.imanol.gym.common.service.BaseServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
-public class ExerciseCategoryServiceImpl implements ExerciseCategoryService {
+public class ExerciseCategoryServiceImpl
+        extends BaseServiceImpl<ExerciseCategory, Long>
+        implements ExerciseCategoryService {
 
     private final ExerciseCategoryRepository exerciseCategoryRepository;
 
-    @Override
-    public ExerciseCategory create(ExerciseCategory exerciseCategory) {
-        exerciseCategory.setActive(true);
-        return exerciseCategoryRepository.save(exerciseCategory);
+    public ExerciseCategoryServiceImpl(
+            ExerciseCategoryRepository exerciseCategoryRepository) {
+
+        super(exerciseCategoryRepository);
+
+        this.exerciseCategoryRepository = exerciseCategoryRepository;
     }
 
     @Override
     public List<ExerciseCategory> findAll() {
         return exerciseCategoryRepository.findAllByActiveTrue();
-    }
-
-    @Override
-    public ExerciseCategory findById(Long id) {
-        return exerciseCategoryRepository.findById(id)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Exercise category not found: " + id)
-                );
-    }
-
-    @Override
-    public ExerciseCategory update(Long id, ExerciseCategory exerciseCategory) {
-        ExerciseCategory existingCategory = findById(id);
-
-        existingCategory.setName(exerciseCategory.getName());
-
-        return exerciseCategoryRepository.save(existingCategory);
     }
 
     @Override
@@ -54,5 +41,23 @@ public class ExerciseCategoryServiceImpl implements ExerciseCategoryService {
         ExerciseCategory category = findById(id);
         category.setActive(false);
         exerciseCategoryRepository.save(category);
+    }
+
+    @Override
+    public ExerciseCategory create(ExerciseCategory entity) {
+        entity.setActive(true);
+        return super.create(entity);
+    }
+
+    @Override
+    public ExerciseCategory update(
+            Long id,
+            ExerciseCategory entity) {
+
+        ExerciseCategory existing = findById(id);
+
+        existing.setName(entity.getName());
+
+        return exerciseCategoryRepository.save(existing);
     }
 }

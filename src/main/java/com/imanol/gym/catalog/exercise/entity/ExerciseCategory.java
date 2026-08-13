@@ -1,5 +1,6 @@
 package com.imanol.gym.catalog.exercise.entity;
 
+import com.imanol.gym.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,11 +15,7 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @Table(name = "exercise_categories")
-public class ExerciseCategory {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class ExerciseCategory extends BaseEntity {
 
     @Column(nullable = false, length = 100, unique = true)
     private String name;
@@ -26,11 +23,4 @@ public class ExerciseCategory {
     @Column(nullable = false)
     private Boolean active;
 
-    @CreationTimestamp
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    @Column(nullable = false)
-    private LocalDateTime updatedAt;
 }
