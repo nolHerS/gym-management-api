@@ -1,8 +1,8 @@
 package com.imanol.gym.common.service;
 
 import com.imanol.gym.common.entity.BaseEntity;
-import com.imanol.gym.common.repository.BaseRepository;
 import com.imanol.gym.common.exception.ResourceNotFoundException;
+import com.imanol.gym.common.repository.BaseRepository;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor

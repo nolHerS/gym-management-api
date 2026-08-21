@@ -2,9 +2,7 @@ package com.imanol.gym.catalog.exercise.service;
 
 import com.imanol.gym.catalog.exercise.entity.ExerciseCategory;
 import com.imanol.gym.catalog.exercise.repository.ExerciseCategoryRepository;
-import com.imanol.gym.common.exception.ResourceNotFoundException;
 import com.imanol.gym.common.service.BaseServiceImpl;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

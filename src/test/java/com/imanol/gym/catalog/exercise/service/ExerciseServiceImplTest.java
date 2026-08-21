@@ -6,7 +6,6 @@ import com.imanol.gym.catalog.exercise.entity.ExerciseCategory;
 import com.imanol.gym.catalog.exercise.repository.ExerciseCategoryRepository;
 import com.imanol.gym.catalog.exercise.repository.ExerciseRepository;
 import com.imanol.gym.common.exception.ResourceNotFoundException;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

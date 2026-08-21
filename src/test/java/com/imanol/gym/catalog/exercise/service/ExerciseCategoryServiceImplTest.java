@@ -3,7 +3,6 @@ package com.imanol.gym.catalog.exercise.service;
 import com.imanol.gym.catalog.exercise.entity.ExerciseCategory;
 import com.imanol.gym.catalog.exercise.repository.ExerciseCategoryRepository;
 import com.imanol.gym.common.exception.ResourceNotFoundException;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -14,7 +13,8 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ExerciseCategoryServiceImplTest {

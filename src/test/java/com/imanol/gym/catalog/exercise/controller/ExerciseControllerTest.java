@@ -1,7 +1,7 @@
 package com.imanol.gym.catalog.exercise.controller;
 
-import com.imanol.gym.catalog.exercise.dto.ExerciseResponse;
 import com.imanol.gym.catalog.exercise.dto.ExerciseRequest;
+import com.imanol.gym.catalog.exercise.dto.ExerciseResponse;
 import com.imanol.gym.catalog.exercise.entity.Exercise;
 import com.imanol.gym.catalog.exercise.entity.ExerciseCategory;
 import com.imanol.gym.catalog.exercise.mapper.ExerciseMapper;
