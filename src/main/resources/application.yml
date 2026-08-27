@@ -1,0 +1,19 @@
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+    display-request-duration: true
+    default-model-expand-depth: 1
+    default-models-expand-depth: 1
+    try-it-out-enabled: true
+  packages-to-scan: com.imanol.gym
+
+# Optional: enable actuator endpoints if present (uncomment when actuator is used)
+# management:
+#   endpoints:
+#     web:
+#       exposure:
+#         include: health,info
