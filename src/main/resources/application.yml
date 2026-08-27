@@ -1,27 +1,8 @@
-springdoc:
-  api-docs:
-    path: /v3/api-docs
-  swagger-ui:
-    path: /swagger-ui.html
-    operations-sorter: method
-    tags-sorter: alpha
-    display-request-duration: true
-    default-model-expand-depth: 1
-    default-models-expand-depth: 1
-    try-it-out-enabled: true
-  packages-to-scan: com.imanol.gym
+# application.yml - common properties
+# This file is intentionally minimal. Use profiles for environment-specific settings:
+# - application-dev.yml : enables Swagger UI and sets a local dev user (admin/adminpass).
+# - application-prod.yml: disables Swagger endpoints.
+# Run in dev:  mvn spring-boot:run -Dspring-boot.run.profiles=dev
+# Run in prod: mvn spring-boot:run -Dspring-boot.run.profiles=prod
 
-# Credenciales fijas para entorno local / desarrollo
-spring:
-  security:
-    user:
-      name: admin
-      password: adminpass
-      roles: ADMIN
-
-# Optional: enable actuator endpoints if present (uncomment when actuator is used)
-# management:
-#   endpoints:
-#     web:
-#       exposure:
-#         include: health,info
+# Add common properties below as needed.

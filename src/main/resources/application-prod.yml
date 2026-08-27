@@ -1,0 +1,8 @@
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+# Production should configure real security / secrets via environment variables or external config.
+# Do NOT enable the default spring.security.user in production.
