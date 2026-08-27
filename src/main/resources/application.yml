@@ -11,6 +11,14 @@ springdoc:
     try-it-out-enabled: true
   packages-to-scan: com.imanol.gym
 
+# Credenciales fijas para entorno local / desarrollo
+spring:
+  security:
+    user:
+      name: admin
+      password: adminpass
+      roles: ADMIN
+
 # Optional: enable actuator endpoints if present (uncomment when actuator is used)
 # management:
 #   endpoints:
