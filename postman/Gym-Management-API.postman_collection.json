@@ -1,0 +1,230 @@
+{
+  "info": {
+    "_postman_id": "5e1e1b3c-2e0d-4c86-8d5a-gym-management-api",
+    "name": "Gym Management API",
+    "description": "Flujo de comprobación de Swagger, autenticación JWT y endpoints principales.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "token", "value": "" },
+    { "key": "categoryId", "value": "1" },
+    { "key": "exerciseId", "value": "1" },
+    { "key": "templateId", "value": "1" },
+    { "key": "templateExerciseId", "value": "1" },
+    { "key": "userId", "value": "4" }
+  ],
+  "item": [
+    {
+      "name": "01 - Swagger",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/swagger-ui.html"
+      }
+    },
+    {
+      "name": "02 - OpenAPI JSON",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/v3/api-docs"
+      }
+    },
+    {
+      "name": "03 - Crear usuario de prueba",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"firstName\": \"imanol\",\n  \"lastName\": \"hernandez\",\n  \"email\": \"imanol@example.com\",\n  \"password\": \"imanol\",\n  \"role\": \"TRAINER\"\n}"
+        },
+        "url": "{{baseUrl}}/api/users"
+      }
+    },
+    {
+      "name": "04 - Login y guardar JWT",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Login correcto', function () { pm.response.to.have.status(200); });",
+              "const json = pm.response.json();",
+              "pm.expect(json.token).to.be.a('string').and.not.empty;",
+              "pm.collectionVariables.set('token', json.token);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"imanol@example.com\",\n  \"password\": \"imanol\"\n}"
+        },
+        "url": "{{baseUrl}}/api/auth/login"
+      }
+    },
+    {
+      "name": "05 - Usuario autenticado",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+        "url": "{{baseUrl}}/api/users/{{userId}}"
+      }
+    },
+    {
+      "name": "06 - Categorías - listar",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+        "url": "{{baseUrl}}/api/exercise-categories"
+      }
+    },
+    {
+      "name": "07 - Categorías - crear",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code === 201) { pm.collectionVariables.set('categoryId', pm.response.json().data.id); }"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+        "body": { "mode": "raw", "raw": "{\n  \"name\": \"Piernas Postman\"\n}" },
+        "url": "{{baseUrl}}/api/exercise-categories"
+      }
+    },
+    {
+      "name": "08 - Categorías - consultar",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+        "url": "{{baseUrl}}/api/exercise-categories/{{categoryId}}"
+      }
+    },
+    {
+      "name": "09 - Ejercicios - crear",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code === 201) { pm.collectionVariables.set('exerciseId', pm.response.json().data.id); }"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+        "body": { "mode": "raw", "raw": "{\n  \"name\": \"Sentadilla Postman\",\n  \"description\": \"Ejercicio de prueba\",\n  \"categoryId\": {{categoryId}}\n}" },
+        "url": "{{baseUrl}}/api/exercises"
+      }
+    },
+    {
+      "name": "10 - Ejercicios - listar",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+        "url": "{{baseUrl}}/api/exercises"
+      }
+    },
+    {
+      "name": "11 - Plantillas - crear",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code === 201) { pm.collectionVariables.set('templateId', pm.response.json().data.id); }"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+        "body": { "mode": "raw", "raw": "{\n  \"name\": \"Rutina Postman\",\n  \"description\": \"Plantilla de prueba\"\n}" },
+        "url": "{{baseUrl}}/api/workout-templates"
+      }
+    },
+    {
+      "name": "12 - Plantillas - listar",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+        "url": "{{baseUrl}}/api/workout-templates"
+      }
+    },
+    {
+      "name": "13 - Añadir ejercicio a plantilla",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code === 201) { pm.collectionVariables.set('templateExerciseId', pm.response.json().data.id); }"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+        "body": { "mode": "raw", "raw": "{\n  \"exerciseId\": {{exerciseId}},\n  \"orderIndex\": 1,\n  \"sets\": 3,\n  \"repetitions\": 10,\n  \"restSeconds\": 60\n}" },
+        "url": "{{baseUrl}}/api/workout-templates/{{templateId}}/exercises"
+      }
+    },
+    {
+      "name": "14 - Ejercicios de plantilla - listar",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+        "url": "{{baseUrl}}/api/workout-templates/{{templateId}}/exercises"
+      }
+    },
+    {
+      "name": "15 - Sin token (debe devolver 401)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Endpoint protegido', function () { pm.response.to.have.status(401); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/exercises"
+      }
+    }
+  ]
+}

@@ -22,7 +22,7 @@ public record UserRequest(
         String email,
 
         @NotBlank
-        @Size(min = 8, max = 255)
+        @Size(min = 6, max = 255)
         String password,
 
         @NotNull
