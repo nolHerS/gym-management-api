@@ -12,10 +12,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -103,6 +105,48 @@ class UserControllerTest {
                         .value("imanol@test.com"))
                 .andExpect(jsonPath("$.data.role").value("CLIENT"))
                 .andExpect(jsonPath("$.data.password").doesNotExist());
+    }
+
+    @Test
+    @WithMockUser(username = "imanol@test.com")
+    void shouldFindAuthenticatedUser() throws Exception {
+
+        User user = createUser();
+
+        UserResponse response = createUserResponse();
+
+        when(userService.findByEmail("imanol@test.com"))
+                .thenReturn(Optional.of(user));
+
+        when(userMapper.toResponse(user))
+                .thenReturn(response);
+
+        mockMvc.perform(
+                        get("/api/users/me")
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.data.id").value(1))
+                .andExpect(jsonPath("$.data.email")
+                        .value("imanol@test.com"))
+                .andExpect(jsonPath("$.data.role").value("CLIENT"))
+                .andExpect(jsonPath("$.data.password").doesNotExist());
+    }
+
+    @Test
+    @WithMockUser(username = "missing@test.com")
+    void shouldReturnNotFoundWhenAuthenticatedUserDoesNotExist() throws Exception {
+
+        when(userService.findByEmail("missing@test.com"))
+                .thenReturn(Optional.empty());
+
+        mockMvc.perform(
+                        get("/api/users/me")
+                )
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.message")
+                        .value("Resource not found with email: missing@test.com"));
     }
 
     @Test

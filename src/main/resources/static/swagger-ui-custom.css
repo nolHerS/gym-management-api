@@ -1,0 +1,92 @@
+@media (prefers-color-scheme: dark) {
+    body {
+        background: #1b1b1b;
+    }
+
+    .swagger-ui {
+        --swagger-bg: #1b1b1b;
+        --swagger-surface: #252525;
+        --swagger-surface-hover: #303030;
+        --swagger-border: #4a4a4a;
+        --swagger-text: #e6e6e6;
+        --swagger-muted-text: #b8b8b8;
+        --swagger-link: #7db7ff;
+        background: var(--swagger-bg);
+        color: var(--swagger-text);
+    }
+
+    .swagger-ui .topbar,
+    .swagger-ui .scheme-container,
+    .swagger-ui section.models,
+    .swagger-ui .model-box,
+    .swagger-ui .opblock-description-wrapper,
+    .swagger-ui .opblock-external-docs-wrapper {
+        background: var(--swagger-surface);
+    }
+
+    .swagger-ui .info .title,
+    .swagger-ui .opblock-tag,
+    .swagger-ui .opblock-summary-description,
+    .swagger-ui .parameter__name,
+    .swagger-ui .response-col_status,
+    .swagger-ui .model-title,
+    .swagger-ui label,
+    .swagger-ui table thead tr th,
+    .swagger-ui table thead tr td {
+        color: var(--swagger-text);
+    }
+
+    .swagger-ui .info p,
+    .swagger-ui .info li,
+    .swagger-ui .opblock-description,
+    .swagger-ui .response-col_description,
+    .swagger-ui .parameter__type,
+    .swagger-ui .parameter__deprecated,
+    .swagger-ui .renderedMarkdown p {
+        color: var(--swagger-muted-text);
+    }
+
+    .swagger-ui a {
+        color: var(--swagger-link);
+    }
+
+    .swagger-ui .opblock,
+    .swagger-ui section.models,
+    .swagger-ui .model-box,
+    .swagger-ui .responses-inner h4,
+    .swagger-ui .responses-inner h5,
+    .swagger-ui table thead tr th,
+    .swagger-ui table thead tr td {
+        border-color: var(--swagger-border);
+    }
+
+    .swagger-ui input[type="text"],
+    .swagger-ui input[type="email"],
+    .swagger-ui input[type="password"],
+    .swagger-ui textarea,
+    .swagger-ui select {
+        background: var(--swagger-surface);
+        border-color: var(--swagger-border);
+        color: var(--swagger-text);
+    }
+
+    .swagger-ui .btn {
+        background: var(--swagger-surface);
+        border-color: var(--swagger-border);
+        color: var(--swagger-text);
+    }
+
+    .swagger-ui .btn:hover {
+        background: var(--swagger-surface-hover);
+    }
+
+    .swagger-ui .opblock-summary {
+        border-color: var(--swagger-border);
+    }
+
+    .swagger-ui .microlight,
+    .swagger-ui .highlight-code {
+        background: #171717 !important;
+        color: #e6e6e6;
+    }
+}
