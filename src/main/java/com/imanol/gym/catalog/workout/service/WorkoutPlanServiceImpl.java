@@ -130,11 +130,9 @@ public class WorkoutPlanServiceImpl implements WorkoutPlanService {
                     .findAllByTrainerIdAndClientIdOrderByStartDateDesc(
                             trainer.getId(), clientId);
         }
-        return workoutPlanRepository.findAllByTrainerIdAndClientIdOrderByStartDateDesc(
-                        trainer.getId(), clientId
-                ).stream()
-                .filter(plan -> plan.getStatus() == status)
-                .toList();
+        return workoutPlanRepository
+                .findAllByTrainerIdAndClientIdAndStatusOrderByStartDateDesc(
+                        trainer.getId(), clientId, status);
     }
 
     @Override
@@ -530,27 +528,16 @@ public class WorkoutPlanServiceImpl implements WorkoutPlanService {
             LocalDate endDate,
             Long excludedPlanId
     ) {
-        List<WorkoutPlan> activePlans =
-                workoutPlanRepository
-                        .findAllByClientIdAndStatusOrderByStartDateDesc(
-                                clientId,
-                                WorkoutPlanStatus.ACTIVE
-                        );
-        for (WorkoutPlan existing : activePlans) {
-            if (existing.getId().equals(excludedPlanId)) {
-                continue;
-            }
-            boolean startsBeforeCandidateEnds = endDate == null
-                    || !existing.getStartDate().isAfter(endDate);
-            boolean candidateStartsBeforeExistingEnds =
-                    existing.getEndDate() == null
-                            || !startDate.isAfter(existing.getEndDate());
-            if (startsBeforeCandidateEnds
-                    && candidateStartsBeforeExistingEnds) {
-                throw new ResourceAlreadyExistsException(
-                        "Active workout plan dates overlap"
-                );
-            }
+        boolean overlaps = workoutPlanRepository.findOverlappingPlans(
+                clientId,
+                WorkoutPlanStatus.ACTIVE,
+                startDate,
+                endDate
+        ).stream().anyMatch(plan -> !plan.getId().equals(excludedPlanId));
+        if (overlaps) {
+            throw new ResourceAlreadyExistsException(
+                    "Active workout plan dates overlap"
+            );
         }
     }
 

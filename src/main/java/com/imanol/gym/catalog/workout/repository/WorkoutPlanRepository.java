@@ -4,7 +4,9 @@ import com.imanol.gym.catalog.workout.entity.WorkoutPlan;
 import com.imanol.gym.catalog.workout.entity.WorkoutPlanStatus;
 import com.imanol.gym.common.repository.BaseRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.repository.query.Param;
+import jakarta.persistence.LockModeType;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -26,6 +28,12 @@ public interface WorkoutPlanRepository
             Long clientId
     );
 
+    List<WorkoutPlan> findAllByTrainerIdAndClientIdAndStatusOrderByStartDateDesc(
+            Long trainerId,
+            Long clientId,
+            WorkoutPlanStatus status
+    );
+
     @Query("""
             select p from WorkoutPlan p
             where p.client.id = :clientId
@@ -45,9 +53,10 @@ public interface WorkoutPlanRepository
             select p from WorkoutPlan p
             where p.client.id = :clientId
               and p.status = :status
-              and p.startDate <= :candidateEnd
+              and (:candidateEnd is null or p.startDate <= :candidateEnd)
               and (p.endDate is null or p.endDate >= :candidateStart)
             """)
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
     List<WorkoutPlan> findOverlappingPlans(
             @Param("clientId") Long clientId,
             @Param("status") WorkoutPlanStatus status,

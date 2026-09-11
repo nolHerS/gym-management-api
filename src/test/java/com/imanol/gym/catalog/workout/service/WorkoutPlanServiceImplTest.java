@@ -27,6 +27,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -68,9 +69,9 @@ class WorkoutPlanServiceImplTest {
                 .thenReturn(Optional.of(client));
         when(trainerClientRepository.existsByTrainerIdAndClientId(1L, 2L))
                 .thenReturn(true);
-        when(workoutPlanRepository
-                .findAllByClientIdAndStatusOrderByStartDateDesc(
-                        2L, WorkoutPlanStatus.ACTIVE))
+        when(workoutPlanRepository.findOverlappingPlans(
+                eq(2L), eq(WorkoutPlanStatus.ACTIVE),
+                nullable(LocalDate.class), nullable(LocalDate.class)))
                 .thenReturn(List.of());
         when(exerciseRepository.findById(5L))
                 .thenReturn(Optional.of(exercise(5L)));
@@ -124,9 +125,9 @@ class WorkoutPlanServiceImplTest {
                 .thenReturn(Optional.of(client));
         when(trainerClientRepository.existsByTrainerIdAndClientId(1L, 2L))
                 .thenReturn(true);
-        when(workoutPlanRepository
-                .findAllByClientIdAndStatusOrderByStartDateDesc(
-                        2L, WorkoutPlanStatus.ACTIVE))
+        when(workoutPlanRepository.findOverlappingPlans(
+                eq(2L), eq(WorkoutPlanStatus.ACTIVE),
+                nullable(LocalDate.class), nullable(LocalDate.class)))
                 .thenReturn(List.of());
         when(workoutTemplateRepository.findById(3L))
                 .thenReturn(Optional.of(template));
@@ -170,9 +171,9 @@ class WorkoutPlanServiceImplTest {
         existing.setId(9L);
         existing.setStartDate(LocalDate.of(2026, 9, 1));
         existing.setEndDate(LocalDate.of(2026, 9, 30));
-        when(workoutPlanRepository
-                .findAllByClientIdAndStatusOrderByStartDateDesc(
-                        2L, WorkoutPlanStatus.ACTIVE))
+        when(workoutPlanRepository.findOverlappingPlans(
+                eq(2L), eq(WorkoutPlanStatus.ACTIVE),
+                nullable(LocalDate.class), nullable(LocalDate.class)))
                 .thenReturn(List.of(existing));
 
         assertThatThrownBy(() -> workoutPlanService

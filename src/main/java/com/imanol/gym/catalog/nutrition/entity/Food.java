@@ -5,6 +5,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import org.hibernate.annotations.BatchSize;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -12,6 +13,7 @@ import lombok.Setter;
 import java.math.BigDecimal;
 
 @Entity
+@BatchSize(size = 50)
 @Table(name = "foods", uniqueConstraints = @UniqueConstraint(
         name = "uk_foods_name", columnNames = "name"))
 @Getter

@@ -2,10 +2,12 @@ package com.imanol.gym.user.entity;
 
 import com.imanol.gym.common.entity.BaseEntity;
 import jakarta.persistence.*;
+import org.hibernate.annotations.BatchSize;
 import lombok.Getter;
 import lombok.Setter;
 
 @Entity
+@BatchSize(size = 50)
 @Table(
         name = "users",
         uniqueConstraints = {

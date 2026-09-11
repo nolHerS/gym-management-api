@@ -3,6 +3,8 @@ package com.imanol.gym.catalog.nutrition.entity;
 import com.imanol.gym.common.entity.BaseEntity;
 import com.imanol.gym.user.entity.User;
 import jakarta.persistence.*;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -42,6 +44,11 @@ public class NutritionPlan extends BaseEntity {
     private NutritionPlanStatus status;
 
     @OneToMany(mappedBy = "nutritionPlan", fetch = FetchType.LAZY)
+    @Fetch(FetchMode.SUBSELECT)
     @OrderBy("orderIndex ASC")
     private List<NutritionPlanMeal> meals = new ArrayList<>();
+
+    @Version
+    @Column(nullable = false)
+    private Long version;
 }

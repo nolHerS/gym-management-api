@@ -2,6 +2,8 @@ package com.imanol.gym.catalog.workout.entity;
 
 import com.imanol.gym.common.entity.BaseEntity;
 import jakarta.persistence.*;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -34,6 +36,7 @@ public class WorkoutPlanDay extends BaseEntity {
     private Integer dayOfWeek;
 
     @OneToMany(mappedBy = "workoutPlanDay", fetch = FetchType.LAZY)
+    @Fetch(FetchMode.SUBSELECT)
     @OrderBy("orderIndex ASC")
     private List<WorkoutPlanExercise> exercises = new ArrayList<>();
 }

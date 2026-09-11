@@ -25,6 +25,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -55,9 +56,11 @@ class NutritionPlanServiceImplTest {
         when(userRepository.findByEmail(trainer.getEmail())).thenReturn(Optional.of(trainer));
         when(userRepository.findByIdForUpdate(2L)).thenReturn(Optional.of(client));
         when(trainerClientRepository.existsByTrainerIdAndClientId(1L, 2L)).thenReturn(true);
-        when(planRepository.findAllByClientIdAndStatusOrderByStartDateDesc(
-                2L, NutritionPlanStatus.ACTIVE)).thenReturn(List.of());
-        when(foodRepository.findById(3L)).thenReturn(Optional.of(food));
+        when(planRepository.findOverlappingPlans(
+                eq(2L), eq(NutritionPlanStatus.ACTIVE),
+                nullable(LocalDate.class), nullable(LocalDate.class)))
+                .thenReturn(List.of());
+        when(foodRepository.findAllById(any())).thenReturn(List.of(food));
         when(planRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
         when(mealRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
         when(planFoodRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
@@ -82,8 +85,10 @@ class NutritionPlanServiceImplTest {
         when(userRepository.findByEmail(trainer.getEmail())).thenReturn(Optional.of(trainer));
         when(userRepository.findByIdForUpdate(2L)).thenReturn(Optional.of(client));
         when(trainerClientRepository.existsByTrainerIdAndClientId(1L, 2L)).thenReturn(true);
-        when(planRepository.findAllByClientIdAndStatusOrderByStartDateDesc(
-                2L, NutritionPlanStatus.ACTIVE)).thenReturn(List.of(existing));
+        when(planRepository.findOverlappingPlans(
+                eq(2L), eq(NutritionPlanStatus.ACTIVE),
+                nullable(LocalDate.class), nullable(LocalDate.class)))
+                .thenReturn(List.of(existing));
 
         assertThatThrownBy(() -> service.createForAuthenticatedTrainer(2L, request()))
                 .hasMessage("Active nutrition plan dates overlap");

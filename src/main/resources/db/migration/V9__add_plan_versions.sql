@@ -1,0 +1,5 @@
+ALTER TABLE workout_plans
+    ADD COLUMN version BIGINT NOT NULL DEFAULT 0;
+
+ALTER TABLE nutrition_plans
+    ADD COLUMN version BIGINT NOT NULL DEFAULT 0;

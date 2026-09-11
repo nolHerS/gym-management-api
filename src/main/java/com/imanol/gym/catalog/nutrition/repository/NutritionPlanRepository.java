@@ -4,7 +4,9 @@ import com.imanol.gym.catalog.nutrition.entity.NutritionPlan;
 import com.imanol.gym.catalog.nutrition.entity.NutritionPlanStatus;
 import com.imanol.gym.common.repository.BaseRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.repository.query.Param;
+import jakarta.persistence.LockModeType;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -16,14 +18,17 @@ public interface NutritionPlanRepository
             Long clientId, NutritionPlanStatus status);
     List<NutritionPlan> findAllByTrainerIdAndClientIdOrderByStartDateDesc(
             Long trainerId, Long clientId);
+    List<NutritionPlan> findAllByTrainerIdAndClientIdAndStatusOrderByStartDateDesc(
+            Long trainerId, Long clientId, NutritionPlanStatus status);
 
     @Query("""
             select p from NutritionPlan p
             where p.client.id = :clientId
               and p.status = :status
-              and p.startDate <= :candidateEnd
+              and (:candidateEnd is null or p.startDate <= :candidateEnd)
               and (p.endDate is null or p.endDate >= :candidateStart)
             """)
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
     List<NutritionPlan> findOverlappingPlans(
             @Param("clientId") Long clientId,
             @Param("status") NutritionPlanStatus status,

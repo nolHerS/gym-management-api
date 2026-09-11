@@ -117,10 +117,9 @@ public class TrainerClientServiceImpl
         if (authenticated.getRole() != UserRole.TRAINER) {
             throw new AccessDeniedException("Relationship access denied");
         }
-        return trainerClientRepository.findAllByTrainerId(authenticated.getId())
+        return trainerClientRepository
+                .findByTrainerIdAndClientId(authenticated.getId(), clientId)
                 .stream()
-                .filter(relationship ->
-                        relationship.getClient().getId().equals(clientId))
                 .toList();
     }
 

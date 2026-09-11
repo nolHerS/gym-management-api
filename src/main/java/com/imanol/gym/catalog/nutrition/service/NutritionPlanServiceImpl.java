@@ -19,7 +19,10 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -62,11 +65,14 @@ public class NutritionPlanServiceImpl implements NutritionPlanService {
         User trainer = authenticatedUser(UserRole.TRAINER);
         User client = findClient(clientId);
         requireRelationship(trainer, client);
-        List<NutritionPlan> plans = nutritionPlanRepository
-                .findAllByTrainerIdAndClientIdOrderByStartDateDesc(
-                        trainer.getId(), clientId);
-        return status == null ? plans : plans.stream()
-                .filter(plan -> plan.getStatus() == status).toList();
+        if (status == null) {
+            return nutritionPlanRepository
+                    .findAllByTrainerIdAndClientIdOrderByStartDateDesc(
+                            trainer.getId(), clientId);
+        }
+        return nutritionPlanRepository
+                .findAllByTrainerIdAndClientIdAndStatusOrderByStartDateDesc(
+                        trainer.getId(), clientId, status);
     }
 
     @Override
@@ -162,6 +168,14 @@ public class NutritionPlanServiceImpl implements NutritionPlanService {
 
     private void saveMeals(NutritionPlan plan,
                            List<NutritionPlanMealRequest> requests) {
+        Map<Long, Food> foodsById = foodRepository.findAllById(
+                        requests.stream()
+                                .flatMap(request -> request.foods().stream())
+                                .map(NutritionPlanFoodRequest::foodId)
+                                .collect(Collectors.toSet()))
+                .stream()
+                .collect(Collectors.toMap(Food::getId, Function.identity()));
+
         for (NutritionPlanMealRequest request : requests) {
             NutritionPlanMeal meal = new NutritionPlanMeal();
             meal.setNutritionPlan(plan);
@@ -171,9 +185,11 @@ public class NutritionPlanServiceImpl implements NutritionPlanService {
             NutritionPlanMeal savedMeal = mealRepository.save(meal);
             plan.getMeals().add(savedMeal);
             for (NutritionPlanFoodRequest foodRequest : request.foods()) {
-                Food food = foodRepository.findById(foodRequest.foodId())
-                        .orElseThrow(() -> new ResourceNotFoundException(
-                                "Food not found with id: " + foodRequest.foodId()));
+                Food food = foodsById.get(foodRequest.foodId());
+                if (food == null) {
+                    throw new ResourceNotFoundException(
+                            "Food not found with id: " + foodRequest.foodId());
+                }
                 if (!Boolean.TRUE.equals(food.getActive())) {
                     throw new IllegalArgumentException("Food is inactive");
                 }
@@ -191,9 +207,12 @@ public class NutritionPlanServiceImpl implements NutritionPlanService {
 
     private void deleteMeals(NutritionPlan plan) {
         List<NutritionPlanMeal> meals = plan.getMeals();
-        for (NutritionPlanMeal meal : meals) {
-            planFoodRepository.deleteAll(planFoodRepository
-                    .findAllByNutritionPlanMealId(meal.getId()));
+        List<Long> mealIds = meals.stream()
+                .map(NutritionPlanMeal::getId)
+                .toList();
+        if (!mealIds.isEmpty()) {
+            planFoodRepository.deleteAll(
+                    planFoodRepository.findAllByNutritionPlanMealIdIn(mealIds));
         }
         mealRepository.deleteAll(meals);
         meals.clear();
@@ -201,21 +220,15 @@ public class NutritionPlanServiceImpl implements NutritionPlanService {
 
     private void validateNoOverlap(Long clientId, LocalDate start, LocalDate end,
                                    Long excludedId) {
-        LocalDate candidateEnd = end == null ? LocalDate.MAX : end;
-        List<NutritionPlan> existing = nutritionPlanRepository
-                .findAllByClientIdAndStatusOrderByStartDateDesc(
-                        clientId, NutritionPlanStatus.ACTIVE);
-        for (NutritionPlan plan : existing) {
-            if (plan.getId().equals(excludedId)) {
-                continue;
-            }
-            boolean overlap = !plan.getStartDate().isAfter(candidateEnd)
-                    && (plan.getEndDate() == null
-                    || !start.isAfter(plan.getEndDate()));
-            if (overlap) {
-                throw new ResourceAlreadyExistsException(
-                        "Active nutrition plan dates overlap");
-            }
+        boolean overlaps = nutritionPlanRepository.findOverlappingPlans(
+                clientId,
+                NutritionPlanStatus.ACTIVE,
+                start,
+                end
+        ).stream().anyMatch(plan -> !plan.getId().equals(excludedId));
+        if (overlaps) {
+            throw new ResourceAlreadyExistsException(
+                    "Active nutrition plan dates overlap");
         }
     }
 
