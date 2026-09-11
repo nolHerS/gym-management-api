@@ -11,17 +11,26 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.imanol.gym.common.dto.ApiResponse;
 
 @Configuration
 public class SecurityConfig {
 
     @Bean
+    public ObjectMapper objectMapper() {
+        return new ObjectMapper().registerModule(new JavaTimeModule());
+    }
+
+    @Bean
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http,
-            JwtAuthenticationFilter jwtAuthenticationFilter
+            JwtAuthenticationFilter jwtAuthenticationFilter,
+            ObjectMapper objectMapper
     ) throws Exception {
         return http
                 .csrf(csrf -> csrf.disable())
@@ -29,7 +38,26 @@ public class SecurityConfig {
                 .httpBasic(basic -> basic.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(exceptions -> exceptions
-                        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
+                        .authenticationEntryPoint((request, response, exception) -> {
+                            response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                            response.getWriter().write(objectMapper.writeValueAsString(
+                                    ApiResponse.error(
+                                            HttpStatus.UNAUTHORIZED.value(),
+                                            "Unauthorized",
+                                            "Authentication is required"
+                                    )));
+                        })
+                        .accessDeniedHandler((request, response, exception) -> {
+                            response.setStatus(HttpStatus.FORBIDDEN.value());
+                            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                            response.getWriter().write(objectMapper.writeValueAsString(
+                                    ApiResponse.error(
+                                            HttpStatus.FORBIDDEN.value(),
+                                            "Forbidden",
+                                            "You do not have permission to access this resource"
+                                    )));
+                        }))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/auth/login",

@@ -3,6 +3,10 @@ package com.imanol.gym.common.exception;
 import com.imanol.gym.common.dto.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -56,6 +60,49 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .badRequest()
                 .body(response);
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ApiResponse<Void>> handleAuthenticationException(
+            AuthenticationException exception) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ApiResponse.error(
+                        HttpStatus.UNAUTHORIZED.value(),
+                        "Unauthorized",
+                        "Invalid credentials"));
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiResponse<Void>> handleDataIntegrityViolation(
+            DataIntegrityViolationException exception) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ApiResponse.error(
+                        HttpStatus.CONFLICT.value(),
+                        "Conflict",
+                        "The request conflicts with the current resource state"));
+    }
+
+    @ExceptionHandler(jakarta.validation.ConstraintViolationException.class)
+    public ResponseEntity<ApiResponse<Void>> handleConstraintViolation(
+            jakarta.validation.ConstraintViolationException exception) {
+        return ResponseEntity.badRequest()
+                .body(ApiResponse.error(
+                        HttpStatus.BAD_REQUEST.value(),
+                        "Bad Request",
+                        "Validation failed"));
+    }
+
+    @ExceptionHandler({
+            HttpMessageNotReadableException.class,
+            MethodArgumentTypeMismatchException.class
+    })
+    public ResponseEntity<ApiResponse<Void>> handleMalformedRequest(
+            Exception exception) {
+        return ResponseEntity.badRequest()
+                .body(ApiResponse.error(
+                        HttpStatus.BAD_REQUEST.value(),
+                        "Bad Request",
+                        "Invalid request"));
     }
 
     @ExceptionHandler(Exception.class)
@@ -113,7 +160,7 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(
                         HttpStatus.FORBIDDEN.value(),
                         "Forbidden",
-                        exception.getMessage()
+                        "You do not have permission to access this resource"
                 ));
     }
 }
