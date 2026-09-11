@@ -102,7 +102,7 @@ public class GlobalExceptionHandler {
             StaleStateException.class
     })
     public ResponseEntity<ApiResponse<Void>> handleOptimisticLockingFailure(
-            ObjectOptimisticLockingFailureException exception) {
+            RuntimeException exception) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(ApiResponse.error(
                         HttpStatus.CONFLICT.value(),
