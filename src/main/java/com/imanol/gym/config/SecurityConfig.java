@@ -13,6 +13,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpMethod;
 
 @Configuration
 public class SecurityConfig {
@@ -38,6 +39,26 @@ public class SecurityConfig {
                                 "/swagger-ui.html",
                                 "/swagger-ui-custom.css"
                         ).permitAll()
+                        .requestMatchers(HttpMethod.POST,
+                                "/api/exercise-categories",
+                                "/api/exercises",
+                                "/api/workout-templates",
+                                "/api/workout-templates/*/exercises"
+                        ).hasRole("TRAINER")
+                        .requestMatchers(HttpMethod.PUT,
+                                "/api/exercise-categories/**",
+                                "/api/exercises/**",
+                                "/api/workout-templates/**",
+                                "/api/workout-template-exercises/**"
+                        ).hasRole("TRAINER")
+                        .requestMatchers(HttpMethod.PATCH,
+                                "/api/exercise-categories/**",
+                                "/api/exercises/**",
+                                "/api/workout-templates/**"
+                        ).hasRole("TRAINER")
+                        .requestMatchers(HttpMethod.DELETE,
+                                "/api/workout-template-exercises/**"
+                        ).hasRole("TRAINER")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

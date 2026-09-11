@@ -269,6 +269,30 @@ class WorkoutPlanServiceImplTest {
         )).isEmpty();
     }
 
+    @Test
+    void shouldOnlyReturnPlansOwnedByAuthenticatedTrainer() {
+        User trainer = user(1L, UserRole.TRAINER);
+        User client = user(2L, UserRole.CLIENT);
+        User otherTrainer = user(3L, UserRole.TRAINER);
+        authenticate(trainer);
+        when(userRepository.findByEmail("user@test.com"))
+                .thenReturn(Optional.of(trainer));
+        when(userRepository.findById(2L)).thenReturn(Optional.of(client));
+        when(trainerClientRepository.existsByTrainerIdAndClientId(1L, 2L))
+                .thenReturn(true);
+        WorkoutPlan own = plan(10L, trainer, client);
+        WorkoutPlan other = plan(11L, otherTrainer, client);
+        when(workoutPlanRepository
+                .findAllByTrainerIdAndClientIdOrderByStartDateDesc(1L, 2L))
+                .thenReturn(List.of(own));
+
+        assertThat(workoutPlanService.findForAuthenticatedTrainer(2L, null))
+                .containsExactly(own)
+                .doesNotContain(other);
+        verify(workoutPlanRepository)
+                .findAllByTrainerIdAndClientIdOrderByStartDateDesc(1L, 2L);
+    }
+
     private WorkoutPlanRequest request(
             Long templateId,
             Long exerciseId,

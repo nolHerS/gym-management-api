@@ -28,6 +28,7 @@ public class UserController {
     ) {
 
         User user = userMapper.toEntity(request);
+        user.setRole(com.imanol.gym.user.entity.UserRole.CLIENT);
 
         User createdUser = userService.createUser(user);
 
@@ -50,7 +51,16 @@ public class UserController {
             @PathVariable Long id
     ) {
 
-        User user = userService.findById(id);
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication.getName() == null
+                || "anonymousUser".equals(authentication.getName())) {
+            return userResponse(userService.findById(id));
+        }
+        String email = authentication.getName();
+        User requester = userService.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Authenticated user not found"));
+        User user = userService.findByIdForAuthenticatedUser(requester, id);
 
         return userResponse(user);
     }

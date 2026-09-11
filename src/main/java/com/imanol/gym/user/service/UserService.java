@@ -10,4 +10,6 @@ public interface UserService extends BaseService<User,Long> {
     Optional<User> findByEmail(String email);
 
     User createUser(User user);
+
+    User findByIdForAuthenticatedUser(User requester, Long id);
 }

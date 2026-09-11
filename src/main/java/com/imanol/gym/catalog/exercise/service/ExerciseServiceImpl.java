@@ -8,6 +8,9 @@ import com.imanol.gym.catalog.exercise.repository.ExerciseRepository;
 import com.imanol.gym.common.exception.ResourceNotFoundException;
 import com.imanol.gym.common.service.BaseServiceImpl;
 import org.springframework.stereotype.Service;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
 
@@ -31,7 +34,7 @@ public class ExerciseServiceImpl
 
     @Override
     public Exercise create(ExerciseRequest request) {
-
+        requireTrainerIfAuthenticated();
         ExerciseCategory category =
                 findCategoryById(request.categoryId());
 
@@ -50,6 +53,7 @@ public class ExerciseServiceImpl
             Long id,
             ExerciseRequest request) {
 
+        requireTrainerIfAuthenticated();
         Exercise existingExercise = findById(id);
 
         ExerciseCategory category =
@@ -78,7 +82,7 @@ public class ExerciseServiceImpl
 
     @Override
     public void activate(Long id) {
-
+        requireTrainerIfAuthenticated();
         Exercise exercise = findById(id);
 
         exercise.setActive(true);
@@ -88,7 +92,7 @@ public class ExerciseServiceImpl
 
     @Override
     public void deactivate(Long id) {
-
+        requireTrainerIfAuthenticated();
         Exercise exercise = findById(id);
 
         exercise.setActive(false);
@@ -105,5 +109,16 @@ public class ExerciseServiceImpl
                                         + categoryId
                         )
                 );
+    }
+
+    private void requireTrainerIfAuthenticated() {
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()) {
+            if (authentication.getAuthorities().stream().noneMatch(
+                    authority -> "ROLE_TRAINER".equals(authority.getAuthority()))) {
+                throw new AccessDeniedException("Trainer role is required");
+            }
+        }
     }
 }

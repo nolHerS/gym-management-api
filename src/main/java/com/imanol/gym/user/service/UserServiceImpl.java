@@ -3,6 +3,7 @@ package com.imanol.gym.user.service;
 import com.imanol.gym.common.exception.ResourceAlreadyExistsException;
 import com.imanol.gym.common.service.BaseServiceImpl;
 import com.imanol.gym.user.entity.User;
+import com.imanol.gym.user.entity.UserRole;
 import com.imanol.gym.user.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -37,7 +38,7 @@ public class UserServiceImpl
 
     @Override
     public User createUser(User user) {
-
+        user.setRole(UserRole.CLIENT);
         if (userRepository.existsByEmail(user.getEmail())) {
             throw new ResourceAlreadyExistsException(
                     "User already exists with email: " + user.getEmail()
@@ -48,5 +49,24 @@ public class UserServiceImpl
             user.setPassword(passwordEncoder.encode(user.getPassword()));
         }
         return userRepository.save(user);
+    }
+
+    @Override
+    public User findByIdForAuthenticatedUser(User requester, Long id) {
+        if (requester.getId().equals(id)) {
+            return requester;
+        }
+        if (requester.getRole() != UserRole.TRAINER) {
+            throw new org.springframework.security.access.AccessDeniedException(
+                    "User is not allowed");
+        }
+        User target = findById(id);
+        if (target.getRole() == UserRole.CLIENT
+                && userRepository.existsTrainerClientRelationship(
+                        requester.getId(), id)) {
+            return target;
+        }
+        throw new org.springframework.security.access.AccessDeniedException(
+                "User is not related to this trainer");
     }
 }

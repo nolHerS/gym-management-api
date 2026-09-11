@@ -8,6 +8,9 @@ import com.imanol.gym.user.entity.UserRole;
 import com.imanol.gym.user.repository.TrainerClientRepository;
 import com.imanol.gym.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
 
@@ -31,13 +34,16 @@ public class TrainerClientServiceImpl
             Long trainerId,
             Long clientId
     ) {
-
-        User trainer = userRepository.findById(trainerId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Trainer not found with id: " + trainerId
-                        )
-                );
+        User trainer = authenticatedUser();
+        if (trainer == null) {
+            trainer = userRepository.findById(trainerId)
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Trainer not found with id: " + trainerId));
+        } else if (trainer.getRole() != UserRole.TRAINER
+                || !trainer.getId().equals(trainerId)) {
+            throw new AccessDeniedException(
+                    "Authenticated trainer does not own this relationship");
+        }
 
         User client = userRepository.findById(clientId)
                 .orElseThrow(() ->
@@ -84,7 +90,12 @@ public class TrainerClientServiceImpl
     public List<TrainerClient> findAllByTrainerId(
             Long trainerId
     ) {
-
+        User authenticated = authenticatedUser();
+        if (authenticated != null
+                && (authenticated.getRole() != UserRole.TRAINER
+                || !authenticated.getId().equals(trainerId))) {
+            throw new AccessDeniedException("Trainer relationship access denied");
+        }
         return trainerClientRepository
                 .findAllByTrainerId(trainerId);
     }
@@ -93,8 +104,35 @@ public class TrainerClientServiceImpl
     public List<TrainerClient> findAllByClientId(
             Long clientId
     ) {
+        User authenticated = authenticatedUser();
+        if (authenticated == null) {
+            return trainerClientRepository.findAllByClientId(clientId);
+        }
+        if (authenticated.getRole() == UserRole.CLIENT) {
+            if (!authenticated.getId().equals(clientId)) {
+                throw new AccessDeniedException("Client relationship access denied");
+            }
+            return trainerClientRepository.findAllByClientId(clientId);
+        }
+        if (authenticated.getRole() != UserRole.TRAINER) {
+            throw new AccessDeniedException("Relationship access denied");
+        }
+        return trainerClientRepository.findAllByTrainerId(authenticated.getId())
+                .stream()
+                .filter(relationship ->
+                        relationship.getClient().getId().equals(clientId))
+                .toList();
+    }
 
-        return trainerClientRepository
-                .findAllByClientId(clientId);
+    private User authenticatedUser() {
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()
+                || "anonymousUser".equals(authentication.getName())) {
+            return null;
+        }
+        return userRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Authenticated user not found"));
     }
 }

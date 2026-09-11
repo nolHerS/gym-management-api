@@ -21,6 +21,11 @@ public interface WorkoutPlanRepository
 
     List<WorkoutPlan> findAllByTrainerIdOrderByStartDateDesc(Long trainerId);
 
+    List<WorkoutPlan> findAllByTrainerIdAndClientIdOrderByStartDateDesc(
+            Long trainerId,
+            Long clientId
+    );
+
     @Query("""
             select p from WorkoutPlan p
             where p.client.id = :clientId

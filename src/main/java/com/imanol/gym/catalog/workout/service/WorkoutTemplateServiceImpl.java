@@ -4,6 +4,9 @@ import com.imanol.gym.catalog.workout.entity.WorkoutTemplate;
 import com.imanol.gym.catalog.workout.repository.WorkoutTemplateRepository;
 import com.imanol.gym.common.service.BaseServiceImpl;
 import org.springframework.stereotype.Service;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
 
@@ -29,7 +32,7 @@ public class WorkoutTemplateServiceImpl
 
     @Override
     public WorkoutTemplate create(WorkoutTemplate entity) {
-
+        requireTrainerIfAuthenticated();
         entity.setActive(true);
 
         return super.create(entity);
@@ -40,6 +43,7 @@ public class WorkoutTemplateServiceImpl
             Long id,
             WorkoutTemplate entity) {
 
+        requireTrainerIfAuthenticated();
         WorkoutTemplate existingTemplate = findById(id);
 
         existingTemplate.setName(entity.getName());
@@ -50,7 +54,7 @@ public class WorkoutTemplateServiceImpl
 
     @Override
     public void activate(Long id) {
-
+        requireTrainerIfAuthenticated();
         WorkoutTemplate template = findById(id);
 
         template.setActive(true);
@@ -60,11 +64,21 @@ public class WorkoutTemplateServiceImpl
 
     @Override
     public void deactivate(Long id) {
-
+        requireTrainerIfAuthenticated();
         WorkoutTemplate template = findById(id);
 
         template.setActive(false);
 
         workoutTemplateRepository.save(template);
+    }
+
+    private void requireTrainerIfAuthenticated() {
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()
+                && authentication.getAuthorities().stream().noneMatch(
+                authority -> "ROLE_TRAINER".equals(authority.getAuthority()))) {
+            throw new AccessDeniedException("Trainer role is required");
+        }
     }
 }

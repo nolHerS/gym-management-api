@@ -8,6 +8,9 @@ import com.imanol.gym.catalog.workout.repository.WorkoutTemplateExerciseReposito
 import com.imanol.gym.common.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
 
@@ -29,7 +32,7 @@ public class WorkoutTemplateExerciseServiceImpl
             Long exerciseId,
             WorkoutTemplateExercise workoutTemplateExercise
     ) {
-
+        requireTrainerIfAuthenticated();
         WorkoutTemplate workoutTemplate =
                 workoutTemplateService.findById(workoutTemplateId);
 
@@ -48,7 +51,6 @@ public class WorkoutTemplateExerciseServiceImpl
     public List<WorkoutTemplateExercise> findAllByWorkoutTemplateId(
             Long workoutTemplateId
     ) {
-
         workoutTemplateService.findById(workoutTemplateId);
 
         return workoutTemplateExerciseRepository
@@ -75,7 +77,7 @@ public class WorkoutTemplateExerciseServiceImpl
             Long exerciseId,
             WorkoutTemplateExercise workoutTemplateExercise
     ) {
-
+        requireTrainerIfAuthenticated();
         WorkoutTemplateExercise existingWorkoutTemplateExercise =
                 findById(id);
 
@@ -103,12 +105,22 @@ public class WorkoutTemplateExerciseServiceImpl
 
     @Override
     public void deleteById(Long id) {
-
+        requireTrainerIfAuthenticated();
         WorkoutTemplateExercise workoutTemplateExercise =
                 findById(id);
 
         workoutTemplateExerciseRepository.delete(
                 workoutTemplateExercise
         );
+    }
+
+    private void requireTrainerIfAuthenticated() {
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()
+                && authentication.getAuthorities().stream().noneMatch(
+                authority -> "ROLE_TRAINER".equals(authority.getAuthority()))) {
+            throw new AccessDeniedException("Trainer role is required");
+        }
     }
 }

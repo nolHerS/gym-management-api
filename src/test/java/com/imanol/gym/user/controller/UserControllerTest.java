@@ -20,6 +20,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -67,6 +68,7 @@ class UserControllerTest {
                                             "password": "password123",
                                             "role": "CLIENT"
                                         }
+
                                         """)
                 )
                 .andExpect(status().isCreated())
@@ -79,6 +81,30 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.data.role").value("CLIENT"))
                 .andExpect(jsonPath("$.data.active").value(true))
                 .andExpect(jsonPath("$.data.password").doesNotExist());
+    }
+
+    @Test
+    void shouldForceClientRoleWhenTrainerRoleIsSubmitted() throws Exception {
+        User user = createUser();
+        UserResponse response = createUserResponse();
+        when(userMapper.toEntity(any(UserRequest.class))).thenReturn(user);
+        when(userService.createUser(argThat(candidate ->
+                candidate.getRole() == UserRole.CLIENT))).thenReturn(user);
+        when(userMapper.toResponse(user)).thenReturn(response);
+
+        mockMvc.perform(post("/api/users")
+                        .contentType(APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "firstName": "Attacker",
+                                  "lastName": "Trainer",
+                                  "email": "attacker@test.com",
+                                  "password": "password123",
+                                  "role": "TRAINER"
+                                }
+                                """))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.data.role").value("CLIENT"));
     }
 
     @Test

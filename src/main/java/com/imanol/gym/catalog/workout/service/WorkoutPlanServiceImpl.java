@@ -127,13 +127,14 @@ public class WorkoutPlanServiceImpl implements WorkoutPlanService {
         requireRelationship(trainer, client);
         if (status == null) {
             return workoutPlanRepository
-                    .findAllByClientIdOrderByStartDateDesc(clientId);
+                    .findAllByTrainerIdAndClientIdOrderByStartDateDesc(
+                            trainer.getId(), clientId);
         }
-        return workoutPlanRepository
-                .findAllByClientIdAndStatusOrderByStartDateDesc(
-                        clientId,
-                        status
-                );
+        return workoutPlanRepository.findAllByTrainerIdAndClientIdOrderByStartDateDesc(
+                        trainer.getId(), clientId
+                ).stream()
+                .filter(plan -> plan.getStatus() == status)
+                .toList();
     }
 
     @Override
