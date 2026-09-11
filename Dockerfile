@@ -5,12 +5,13 @@ COPY .mvn .mvn
 COPY mvnw pom.xml ./
 COPY src src
 
-RUN chmod +x mvnw && ./mvnw -q -DskipTests package
+ARG MAVEN_PROFILE=
+RUN chmod +x mvnw && if [ -n "$MAVEN_PROFILE" ]; then ./mvnw -q -P"$MAVEN_PROFILE" -DskipTests package; else ./mvnw -q -DskipTests package; fi
 
 FROM eclipse-temurin:26-jre
 
 WORKDIR /app
-COPY --from=build /workspace/target/gym-management-api-0.0.1-SNAPSHOT.jar app.jar
+COPY --from=build /workspace/target/gym-management-api-1.0.0.jar app.jar
 
 EXPOSE 8080
 

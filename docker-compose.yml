@@ -3,6 +3,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        MAVEN_PROFILE: dev
     image: gym-management-api:local
     container_name: gym-management-api
     restart: unless-stopped
@@ -10,6 +12,7 @@ services:
       - "8080:8080"
     environment:
       SPRING_PROFILES_ACTIVE: local
+      SPRING_FLYWAY_LOCATIONS: classpath:db/migration,classpath:db/migration-dev
       SPRING_DATASOURCE_URL: jdbc:mysql://gym-mysql:3306/gym_management
       SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-root}
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env}

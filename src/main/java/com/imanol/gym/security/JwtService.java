@@ -22,7 +22,27 @@ public class JwtService {
             @Value("${app.jwt.secret}") String secret,
             @Value("${app.jwt.expiration-ms:3600000}") long expirationMillis
     ) {
-        this.signingKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret));
+        if (secret == null || secret.isBlank()) {
+            throw new IllegalStateException(
+                    "JWT secret must be configured and must not be blank"
+            );
+        }
+        try {
+            byte[] decodedSecret = Decoders.BASE64.decode(secret);
+            if (decodedSecret.length < 32) {
+                throw new IllegalStateException(
+                        "JWT secret must decode to at least 256 bits"
+                );
+            }
+            this.signingKey = Keys.hmacShaKeyFor(decodedSecret);
+        } catch (IllegalStateException exception) {
+            throw exception;
+        } catch (RuntimeException exception) {
+            throw new IllegalStateException(
+                    "JWT secret must be valid Base64 and at least 256 bits",
+                    exception
+            );
+        }
         this.expirationMillis = expirationMillis;
     }
 
